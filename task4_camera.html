@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sprout Explorer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:#f0fff4;min-height:100vh;}
+
+/* HOME */
+#home{display:flex;flex-direction:column;align-items:center;padding:24px 16px 40px;}
+.home-emoji{font-size:80px;margin-top:24px;}
+.home-title{font-size:32px;font-weight:900;color:#2d6a4f;margin:8px 0 4px;}
+.home-sub{font-size:16px;color:#52796f;margin-bottom:28px;}
+.quest-card{width:100%;max-width:400px;display:flex;align-items:center;gap:14px;border-radius:20px;border-width:3px;border-style:solid;padding:16px;margin-bottom:16px;cursor:pointer;transition:transform .1s;}
+.quest-card:active{transform:scale(.97);}
+.quest-card-emoji{font-size:42px;}
+.quest-card-title{font-size:20px;font-weight:800;}
+.quest-card-goal{font-size:14px;color:#444;margin-top:2px;}
+.quest-card-hint{font-size:12px;color:#888;margin-top:4px;}
+
+/* QUEST SCREEN */
+#quest-screen{display:none;flex-direction:column;align-items:center;padding:24px 16px;min-height:100vh;}
+.quest-header{width:100%;max-width:400px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.back-btn{background:#2d6a4f;color:#fff;border:none;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+.progress-badge{border-radius:20px;padding:10px 20px;display:flex;align-items:center;gap:6px;}
+.progress-badge span{color:#fff;font-weight:900;font-size:18px;}
+.quest-title-big{font-size:26px;font-weight:900;color:#2d6a4f;margin-bottom:8px;text-align:center;}
+.quest-goal-txt{font-size:16px;color:#52796f;margin-bottom:16px;text-align:center;}
+.stars-row{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
+.star{font-size:28px;opacity:.2;transition:all .3s;}
+.star.lit{opacity:1;transform:scale(1.2);}
+
+/* CAMERA BUTTON */
+.cam-btn-wrap{display:flex;flex-direction:column;align-items:center;margin:16px 0;}
+.cam-label{display:flex;flex-direction:column;align-items:center;cursor:pointer;}
+.cam-circle{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:48px;border-width:5px;border-style:solid;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:transform .1s;}
+.cam-circle:active{transform:scale(.93);}
+.cam-hint{margin-top:12px;font-size:16px;font-weight:700;color:#52796f;}
+#file-input{display:none;}
+
+/* PREVIEW */
+#preview-wrap{display:none;flex-direction:column;align-items:center;width:100%;max-width:400px;margin:16px 0;}
+#preview-img{width:100%;border-radius:16px;max-height:280px;object-fit:cover;box-shadow:0 4px 16px rgba(0,0,0,.15);}
+.check-btn{margin-top:16px;border:none;border-radius:50px;padding:16px 48px;font-size:20px;font-weight:900;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.retake-btn{margin-top:10px;background:none;border:2px solid #ccc;border-radius:50px;padding:10px 32px;font-size:16px;font-weight:700;color:#666;cursor:pointer;}
+
+/* LOADING */
+#loading{display:none;flex-direction:column;align-items:center;padding:40px 20px;}
+#loading.show{display:flex;}
+.spinner{width:70px;height:70px;border:7px solid #e0e0e0;border-top-color:#2d6a4f;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-size:20px;font-weight:700;color:#2d6a4f;text-align:center;}
+.load-sub{font-size:14px;color:#888;margin-top:8px;}
+
+/* RESULT */
+#result{display:none;flex-direction:column;align-items:center;padding:20px;text-align:center;}
+#result.show{display:flex;}
+.result-emoji{font-size:72px;}
+.result-title{font-size:28px;font-weight:900;margin-top:12px;}
+.result-label{font-size:18px;color:#666;margin-top:8px;}
+.result-btn{margin-top:20px;border:none;border-radius:50px;padding:14px 40px;font-size:18px;font-weight:900;color:#fff;cursor:pointer;}
+
+/* CELEBRATE */
+#cel{display:none;flex-direction:column;align-items:center;padding:32px 20px 60px;}
+#cel.show{display:flex;}
+.cel-emoji{font-size:80px;margin-top:16px;}
+.cel-title{font-size:34px;font-weight:900;margin-top:8px;}
+.cel-sub{font-size:18px;color:#52796f;margin-top:4px;margin-bottom:16px;}
+.trophy-card{width:100%;max-width:400px;border-radius:20px;border-width:3px;border-style:solid;background:#fff;padding:20px;text-align:center;margin-top:16px;}
+.trophy-name{font-size:22px;font-weight:800;color:#333;}
+.trophy-badge{font-size:15px;color:#666;margin-top:6px;}
+.photo-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;width:100%;max-width:400px;}
+.photo-item{display:flex;flex-direction:column;align-items:center;width:calc(33% - 8px);}
+.photo-thumb{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;}
+.photo-lbl{font-size:11px;color:#666;margin-top:4px;text-align:center;}
+.play-btn{margin-top:28px;border:none;border-radius:50px;padding:18px 40px;font-size:20px;font-weight:900;color:#fff;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home">
+  <div class="home-emoji">🌱</div>
+  <div class="home-title">Sprout Explorer!</div>
+  <div class="home-sub">Pick a quest and start snapping!</div>
+  <div id="qlist"></div>
+</div>
+
+<!-- QUEST SCREEN -->
+<div id="quest-screen">
+  <div class="quest-header">
+    <button class="back-btn" onclick="goHome()">← Home</button>
+    <div class="progress-badge" id="prog-badge">
+      <span id="prog-emoji">🌸</span>
+      <span id="prog-txt">0/3</span>
+    </div>
+  </div>
+  <div class="quest-title-big" id="qs-title"></div>
+  <div class="quest-goal-txt" id="qs-goal"></div>
+  <div class="stars-row" id="stars-row"></div>
+
+  <!-- Camera button -->
+  <div class="cam-btn-wrap" id="cam-wrap">
+    <label class="cam-label" for="file-input">
+      <div class="cam-circle" id="cam-circle">📸</div>
+      <div class="cam-hint">Tap to take a photo!</div>
+    </label>
+    <input type="file" id="file-input" accept="image/*" capture="environment"/>
+  </div>
+
+  <!-- Preview -->
+  <div id="preview-wrap">
+    <img id="preview-img" src="" alt="preview"/>
+    <button class="check-btn" id="check-btn" onclick="checkPhoto()">Check it! 🔍</button>
+    <button class="retake-btn" onclick="retake()">Retake 🔄</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="load-txt">Bud is checking... 🌱</div>
+    <div class="load-sub">Just a moment!</div>
+  </div>
+
+  <!-- Result -->
+  <div id="result">
+    <div class="result-emoji" id="result-emoji"></div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-label" id="result-label"></div>
+    <button class="result-btn" id="result-btn" onclick="nextSnap()"></button>
+  </div>
+</div>
+
+<!-- CELEBRATE -->
+<div id="cel">
+  <div class="cel-emoji">🏆</div>
+  <div class="cel-title" id="cel-title"></div>
+  <div class="cel-sub" id="cel-sub"></div>
+  <div class="stars-row" id="cel-stars"></div>
+  <div class="trophy-card" id="trophy-card">
+    <div class="trophy-name" id="trophy-name"></div>
+    <div class="trophy-badge" id="trophy-badge"></div>
+  </div>
+  <div style="width:100%;max-width:400px;margin-top:20px;">
+    <div style="font-size:16px;font-weight:700;color:#444;margin-bottom:8px;">Your finds:</div>
+    <div class="photo-row" id="photo-row"></div>
+  </div>
+  <button class="play-btn" id="play-btn" onclick="goHome()">Try Another Quest! 🌱</button>
+</div>
+
+<canvas id="canvas" style="display:none"></canvas>
+
+<script>
+const Q=[
+  {id:'flowers',emoji:'🌸',title:'Flower Hunter',goal:'Find 3 flowers around you!',target:3,color:'#FF6B9D',light:'#FFE4F0',hint:'Look outside or on the balcony!',prompt:'Does this photo contain any plant, flower, leaf, tree, grass, or green vegetation? Answer YES or NO, then in 5 words describe what you see.'},
+  {id:'devices',emoji:'💡',title:'Device Detective',goal:'Find 3 electrical devices at home!',target:3,color:'#6C63FF',light:'#EAE8FF',hint:'TV, lamp, phone are everywhere!',prompt:'Does this photo contain any electrical device, screen, appliance, charger, keyboard, laptop, phone, TV, fan, or anything electronic? Answer YES or NO, then in 5 words describe what you see.'},
+  {id:'round',emoji:'⭕',title:'Shape Spotter',goal:'Find 3 round objects!',target:3,color:'#F59E0B',light:'#FEF3C7',hint:'Balls, clocks, plates are round!',prompt:'Does this photo contain any round, circular or oval object like a plate, bowl, clock, ball, wheel, cup or coin? Answer YES or NO, then in 5 words describe what you see.'}
+];
+
+let cq=null, found=0, caps=[], currentB64='', currentDataUrl='';
+
+// Build quest cards
+const ql=document.getElementById('qlist');
+Q.forEach(q=>{
+  const d=document.createElement('div');
+  d.className='quest-card';
+  d.style.cssText=`background:${q.light};border-color:${q.color};`;
+  d.innerHTML=`<div class="quest-card-emoji">${q.emoji}</div><div><div class="quest-card-title" style="color:${q.color}">${q.title}</div><div class="quest-card-goal">${q.goal}</div><div class="quest-card-hint">💡 ${q.hint}</div></div>`;
+  d.onclick=()=>startQ(q);
+  ql.appendChild(d);
+});
+
+// File input handler
+document.getElementById('file-input').addEventListener('change', function(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    currentDataUrl=ev.target.result;
+    currentB64=currentDataUrl.split(',')[1];
+    // Show preview
+    document.getElementById('preview-img').src=currentDataUrl;
+    document.getElementById('cam-wrap').style.display='none';
+    document.getElementById('preview-wrap').style.display='flex';
+  };
+  reader.readAsDataURL(file);
+  // Reset input so same photo can be retaken
+  this.value='';
+});
+
+function startQ(q){
+  cq=q; found=0; caps=[];
+  document.getElementById('home').style.display='none';
+  const qs=document.getElementById('quest-screen');
+  qs.style.display='flex';
+  qs.style.background=q.light;
+  document.getElementById('prog-badge').style.background=q.color;
+  document.getElementById('prog-emoji').textContent=q.emoji;
+  document.getElementById('prog-txt').textContent=`0/${q.target}`;
+  document.getElementById('qs-title').textContent=q.title+' '+q.emoji;
+  document.getElementById('qs-goal').textContent=q.goal;
+  document.getElementById('cam-circle').style.borderColor=q.color;
+  document.getElementById('check-btn').style.background=q.color;
+  document.getElementById('result-btn').style.background=q.color;
+  buildStars('stars-row',0,q.target);
+  showSection('cam');
+}
+
+function buildStars(id,count,total){
+  const el=document.getElementById(id);el.innerHTML='';
+  for(let i=0;i<total;i++){
+    const s=document.createElement('span');
+    s.className='star'+(i<count?' lit':'');
+    s.textContent='⭐';
+    el.appendChild(s);
+  }
+}
+
+function showSection(sec){
+  document.getElementById('cam-wrap').style.display=sec==='cam'?'flex':'none';
+  document.getElementById('preview-wrap').style.display=sec==='preview'?'flex':'none';
+  document.getElementById('loading').style.display=sec==='loading'?'flex':'none';
+  document.getElementById('result').style.display=sec==='result'?'flex':'none';
+}
+
+function retake(){
+  currentB64=''; currentDataUrl='';
+  showSection('cam');
+}
+
+async function checkPhoto(){
+  if(!currentB64)return;
+  showSection('loading');
+  try{
+    const r=await askClaude(currentB64, cq.prompt);
+    if(r.found){
+      found++;
+      caps.push({dataUrl:currentDataUrl, label:r.label});
+      document.getElementById('prog-txt').textContent=`${found}/${cq.target}`;
+      buildStars('stars-row',found,cq.target);
+      document.getElementById('result-emoji').textContent='🎉';
+      document.getElementById('result-title').textContent='Found it!';
+      document.getElementById('result-title').style.color=cq.color;
+      document.getElementById('result-label').textContent=r.label;
+      document.getElementById('result-btn').textContent=found>=cq.target?'See Trophy! 🏆':'Find Another! 📸';
+      showSection('result');
+    }else{
+      document.getElementById('result-emoji').textContent='🤔';
+      document.getElementById('result-title').textContent='Not quite!';
+      document.getElementById('result-title').style.color='#888';
+      document.getElementById('result-label').textContent='I see: '+r.label+'. Keep looking for '+cq.emoji+'!';
+      document.getElementById('result-btn').textContent='Try Again! 📸';
+      showSection('result');
+    }
+  }catch(e){
+    showSection('cam');
+    alert('Error: '+e.message);
+  }
+}
+
+function nextSnap(){
+  if(found>=cq.target){
+    showCel();
+  }else{
+    currentB64=''; currentDataUrl='';
+    showSection('cam');
+  }
+}
+
+async function askClaude(b64,prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':'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',
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:100,
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+        {type:'text',text:prompt}
+      ]}]
+    })
+  });
+  const data=await res.json();
+  const text=data?.content?.[0]?.text??'';
+  return{
+    found:text.toUpperCase().startsWith('YES'),
+    label:text.replace(/^(YES|NO)[,.\s]*/i,'').trim()||'Something!'
+  };
+}
+
+function showCel(){
+  document.getElementById('quest-screen').style.display='none';
+  const cel=document.getElementById('cel');
+  cel.style.background=cq.light;
+  cel.classList.add('show');
+  document.getElementById('cel-title').style.color=cq.color;
+  document.getElementById('cel-title').textContent='Quest Complete!';
+  document.getElementById('cel-sub').textContent=`You found ${cq.target} ${cq.emoji}!`;
+  buildStars('cel-stars',cq.target,cq.target);
+  document.getElementById('trophy-card').style.borderColor=cq.color;
+  document.getElementById('trophy-name').textContent=cq.title;
+  document.getElementById('trophy-badge').textContent=`${cq.emoji} Explorer Badge Earned!`;
+  document.getElementById('play-btn').style.background=cq.color;
+  const pr=document.getElementById('photo-row');pr.innerHTML='';
+  caps.forEach(c=>{
+    const d=document.createElement('div');d.className='photo-item';
+    d.innerHTML=`<img class="photo-thumb" src="${c.dataUrl}"/><div class="photo-lbl">${c.label}</div>`;
+    pr.appendChild(d);
+  });
+}
+
+function goHome(){
+  document.getElementById('quest-screen').style.display='none';
+  document.getElementById('cel').classList.remove('show');
+  document.getElementById('home').style.display='flex';
+  cq=null; found=0; caps=[];
+  currentB64=''; currentDataUrl='';
+}
+</script>
+</body>
+</html>
